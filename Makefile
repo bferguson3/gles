@@ -1,8 +1,13 @@
-CPPC:=g++
-CFLAGS:=-I/opt/vc/include \
-	-L/opt/vc/lib \
-	-lGLESv2 -lEGL -lbcm_host -lvcos -lvchiq_arm -lpthread -lrt
-PROJECT:=.
+CC:=gcc
+CFLAGS:=-lglut -lGL \
+	-v
+PROJECT:=hellotriangle
 
 default:
-	$(CPPC) $(CFLAGS) -Wall -o app $(PROJECT)/main.cpp
+	$(CC) $(CFLAGS) -Wall -o app $(PROJECT)/main.c
+
+test: default
+	./app
+
+clean:
+	rm app
