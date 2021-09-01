@@ -1,10 +1,10 @@
 CC:=gcc
-CFLAGS:=-lglut -lGL \
-	-v
-PROJECT:=hellotriangle
+CFLAGS:=-v
+LIBS:=-lglut -lGLEW -lGL -lGLU -lm
+PROJECT:=study
 
 default:
-	$(CC) $(CFLAGS) -Wall -o app $(PROJECT)/main.c
+	$(CC) $(CFLAGS) -Wall -o app $(PROJECT)/main.c $(LIBS)
 
 test: default
 	./app
