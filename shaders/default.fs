@@ -1,11 +1,9 @@
-#version 300 es
+#version 120
 
-uniform mediump vec3 incolor;
-//"in mediump vec3 incolor;\n"
-in mediump vec3 fcolor;
-out mediump vec4 FragColor;
+uniform vec3 incolor;
+varying vec3 fcolor;
 
 void main() 
 {
-    FragColor = vec4(incolor * fcolor, 1.0);
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

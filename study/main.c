@@ -10,6 +10,12 @@
 #define ASCII_DEL 127
 #define TRUE 1
 #define FALSE 0
+#define bool int 
+#define false FALSE 
+#define true TRUE 
+
+#define VEC3(n) (n.x),(n.y),(n.z)
+#define VEC4(n) (n.r),(n.g),(n.b),(n.a)
 
 float spd = 0.1;
 float red = 1.0f, blue = 1.0f, green = 1.0f;
@@ -22,7 +28,12 @@ typedef struct _vec3 {
     float z;
 } vec3;
 
-#define VEC3(n) (n.x),(n.y),(n.z)
+typedef struct _vec4 { 
+    float r;
+    float g;
+    float b;
+    float a;
+} vec4;
 
 typedef struct _camera {
     float h;
@@ -35,7 +46,6 @@ typedef struct _camera {
 } Camera;
 
 Camera playerCam;
-
 
 void set_camera_pos(Camera* c)
 {
@@ -53,12 +63,11 @@ void set_camera_dir(Camera* c)
     c->dir.y = sin(c->v);
 }
 
+vec3 color_white = { 1.0, 1.0, 1.0 };
+
 void draw_snowman()
 {
-    vec3 color_white = { 1.0, 1.0, 1.0 };
-    //glColor3f(VEC3(color_white));
-    GLint clr = glGetUniformLocation(shader_program, "incolor");
-    glUniform3f(clr, VEC3(color_white));
+    glColor3f(VEC3(color_white));
     // body 
     glTranslatef(0.0f, 0.75f, 0.0f);
     glutSolidSphere(0.75f, 20, 20);
@@ -84,10 +93,14 @@ void DRAW()
     if(playerCam.delta_v != 0) set_camera_dir(&playerCam);
     if(playerCam.delta_h != 0) set_camera_dir(&playerCam);
     if(playerCam.delta_pos != 0) set_camera_pos(&playerCam);
-
+    
     // clear screen buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(shader_program);
+    
+    //glUseProgram(shader_program);
+    GLint clr = glGetUniformLocation(shader_program, "incolor");
+    glUniform3f(clr, VEC3(color_white));
+    
     // reset transformation
     glLoadIdentity();
     // camera position and angle:
@@ -160,29 +173,6 @@ void KEY_PRESSED(u8 key, int x, int y)
     }  
 }
 
-/*
-GLUT_KEY_F1
-GLUT_KEY_F2
-GLUT_KEY_F3
-GLUT_KEY_F4
-GLUT_KEY_F5
-GLUT_KEY_F6
-GLUT_KEY_F7
-GLUT_KEY_F8
-GLUT_KEY_F9
-GLUT_KEY_F10
-GLUT_KEY_F11
-GLUT_KEY_F12
-GLUT_KEY_LEFT
-GLUT_KEY_UP
-GLUT_KEY_RIGHT
-GLUT_KEY_DOWN
-GLUT_KEY_PAGE_UP
-GLUT_KEY_PAGE_DOWN
-GLUT_KEY_HOME
-GLUT_KEY_END
-GLUT_KEY_INSERT
-*/
 void EXKEY_PRESSED(int key, int x, int y)
 {
 	switch (key) {
@@ -192,13 +182,11 @@ void EXKEY_PRESSED(int key, int x, int y)
 		case GLUT_KEY_RIGHT : 
             playerCam.delta_h = 0.01f; 
             break;
-		case GLUT_KEY_UP : 
-            //playerCam.delta_pos = 0.5f; 
+		case GLUT_KEY_UP :
             playerCam.delta_v = 0.01f;
             break;
 		case GLUT_KEY_DOWN : 
             playerCam.delta_v = -0.01f;
-            //playerCam.delta_pos = -0.5f; 
             break;
 	}
 }
@@ -227,17 +215,7 @@ void RESIZE(int w, int h)
     glMatrixMode(GL_MODELVIEW); // default view
 }
 
-    /* Display mode and color mode 
-GLUT_RGBA or GLUT_RGB – selects a RGBA window. This is the default color mode.
-GLUT_INDEX – selects a color index mode.
- OR
-GLUT_SINGLE – single buffer window
-GLUT_DOUBLE – double buffer window, required to have smooth animation.
- OR
-GLUT_ACCUM – The accumulation buffer
-GLUT_STENCIL – The stencil buffer
-GLUT_DEPTH – The depth buffer
-    */
+
 void setup_camera(Camera* c)
 {
     c->h = 0;
@@ -253,21 +231,22 @@ void setup_camera(Camera* c)
     c->pos.z = 5.0f;
 }
 
-#define bool int 
-#define false FALSE 
-#define true TRUE 
+void print_shader_debug(GLuint obj)
+{
+    GLint length;
+    glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &length);
+    char* log = malloc(sizeof(char) * length);
+    glGetShaderInfoLog(obj, length, &length, &log[0]);
+    printf("%s\n",log);
+    free(log);
+}
 
 bool check_shader_compile_status(GLuint obj) {
     GLint status;
     glGetShaderiv(obj, GL_COMPILE_STATUS, &status);
-    if(status == GL_FALSE) {
-        GLint length;
-        glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &length);
-        //vector<char> log(length);
-        char* log = malloc(sizeof(char) * length);
-        glGetShaderInfoLog(obj, length, &length, &log[0]);
-        printf("%s\n",log);
-        free(log);
+    if(status == GL_FALSE) 
+    {
+        print_shader_debug(obj);
         return false;
     }
     return true;
@@ -276,18 +255,13 @@ bool check_shader_compile_status(GLuint obj) {
 int check_program_link_status(GLuint obj) {
     GLint status;
     glGetProgramiv(obj, GL_LINK_STATUS, &status);
-    if(status == GL_FALSE) {
-        //GLint length;
-        //glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &length);
-        //vector<char> log(length);
-        //glGetProgramInfoLog(obj, length, &length, &log[0]);
-        //cout << &log[0];
+    if(status == GL_FALSE) 
+    {
+        print_shader_debug(obj);
         return FALSE;
     }
     return TRUE;
 }
-
-//char* mystr;
 
 int filesize(char* fname)
 {
@@ -316,7 +290,8 @@ int LOAD_SHADERS()
     int len = filesize("shaders/default.vs");
     glShaderSource(vertex_shader, 1, &vertex_source, &len);
     glCompileShader(vertex_shader);
-    if(!check_shader_compile_status(vertex_shader)) {
+    if(!check_shader_compile_status(vertex_shader)) 
+    {
         printf("Vertex shader failed to compile.\n");    
         return FALSE;
     }
@@ -326,7 +301,8 @@ int LOAD_SHADERS()
     len = filesize("shaders/default.fs");
     glShaderSource(fragment_shader, 1, &fragment_source, &len);
     glCompileShader(fragment_shader);
-    if(!check_shader_compile_status(fragment_shader)) {
+    if(!check_shader_compile_status(fragment_shader)) 
+    {
         printf("Fragment shader failed to compile.\n");
         return FALSE;
     }
@@ -336,9 +312,14 @@ int LOAD_SHADERS()
     glAttachShader(shader_program, fragment_shader);
     
     glLinkProgram(shader_program);
-    if(!check_program_link_status(shader_program)) {
+    if(!check_program_link_status(shader_program)) 
+    {
         printf("failed\n");
         return FALSE;
+    }
+    else
+    {
+        printf("Shaders loaded successfully.\n");
     }
     // VERTEX SHADER: RESET INCOMING VARIABLE POINTER SIZE
     // position attribute
@@ -366,9 +347,9 @@ int main(int argc, char** argv)
     }
     // Print hardware info
     printf("This GPU supplied by %s\n", glGetString(GL_VENDOR));
-    printf("This GPU supports %s\n", glGetString(GL_VERSION));
+    printf("This GPU supports OpenGL version %s\n", glGetString(GL_VERSION));
     printf("This GPU renders with %s\n", glGetString(GL_RENDERER));
-    printf("This GPU supports %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    printf("This GPU supports GLSL %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
     
     /*
     // shader test
@@ -391,7 +372,6 @@ int main(int argc, char** argv)
     // make a camera
     setup_camera(&playerCam);
     
-
     // App loop 
     glutMainLoop();
 
