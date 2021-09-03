@@ -1,7 +1,7 @@
 #version 120
 
-uniform vec3 incolor;
-varying vec3 fcolor;
+//uniform vec3 incolor;
+//varying vec3 fcolor;
 
 void main() 
 {

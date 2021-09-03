@@ -97,9 +97,9 @@ void DRAW()
     // clear screen buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    //glUseProgram(shader_program);
-    GLint clr = glGetUniformLocation(shader_program, "incolor");
-    glUniform3f(clr, VEC3(color_white));
+    glUseProgram(shader_program);
+    //GLint clr = glGetUniformLocation(shader_program, "incolor");
+    //glUniform3f(clr, VEC3(color_white));
     
     // reset transformation
     glLoadIdentity();
